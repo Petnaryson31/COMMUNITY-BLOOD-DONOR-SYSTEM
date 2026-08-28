@@ -1,0 +1,920 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Community Blood Donor Management System</title>
+
+    <!-- CONNECT CSS -->
+    <link rel="stylesheet" href="style.css">
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+</head>
+
+<body>
+
+    <!-- =========================
+         LOGIN PAGE
+    ========================== -->
+    <section id="loginPage" class="login-container">
+
+        <div class="login-card">
+
+            <div class="login-brand">
+
+                <div class="login-brand-top">
+
+                    <div class="logo-icon">
+                        <span class="blood-drop">♥</span>
+                    </div>
+
+                    <span class="login-brand-kicker">
+                        Community Health System
+                    </span>
+
+                    <h2>
+                        Community-Based Blood Donor
+                        Management & Emergency Matching System
+                    </h2>
+
+                    <p>
+                        A community-based platform designed to help
+                        health workers manage volunteer blood donors
+                        and quickly identify suitable donors during
+                        emergency blood requests.
+                    </p>
+
+                    <ul class="login-brand-points">
+                        <li>
+                            <span>✓</span>
+                            Manage registered blood donors
+                        </li>
+                        <li>
+                            <span>✓</span>
+                            Create emergency blood requests
+                        </li>
+                        <li>
+                            <span>✓</span>
+                            Match donors by blood type
+                        </li>
+                        <li>
+                            <span>✓</span>
+                            Monitor donor availability
+                        </li>
+                    </ul>
+
+                </div>
+
+                <div class="login-brand-foot">
+                    Community Blood Donor Management System
+                </div>
+
+            </div>
+
+
+            <div class="login-form-panel">
+
+                <div class="login-form-header">
+                    <span class="section-label">SYSTEM ACCESS</span>
+                    <h3>Welcome Back</h3>
+                    <p>Enter your account information to continue.</p>
+                </div>
+
+                <form id="loginForm">
+
+                    <div class="form-group">
+                        <label for="loginUsername">Username</label>
+                        <input
+                            type="text"
+                            id="loginUsername"
+                            class="form-control"
+                            placeholder="Enter username"
+                            required
+                        >
+                    </div>
+
+                    <div class="form-group">
+                        <label for="loginPassword">Password</label>
+                        <input
+                            type="password"
+                            id="loginPassword"
+                            class="form-control"
+                            placeholder="Enter password"
+                            required
+                        >
+                    </div>
+
+                    <button type="submit" class="btn-submit">
+                        Sign In
+                        <span>→</span>
+                    </button>
+
+                </form>
+
+                <p class="BLOOD-account">
+                    BLOOD account: <strong>admin</strong> /
+                    <strong>admin123</strong>
+                </p>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- =========================
+         MAIN APPLICATION
+    ========================== -->
+    <div id="app" class="app-hidden">
+
+        <!-- HEADER -->
+        <header class="app-header">
+
+            <div class="logo-container">
+
+                <div class="logo-icon">
+                    <span class="blood-drop">♥</span>
+                </div>
+
+                <div>
+                    <h1>Community Blood Donor System</h1>
+                    <p>Emergency Donor Matching Platform</p>
+                </div>
+
+            </div>
+
+            <div class="user-control-panel">
+
+                <div class="user-info">
+                    <strong id="currentUser">Administrator</strong>
+                    <small>System Administrator</small>
+                </div>
+
+                <button class="btn-auth" id="logoutBtn">
+                    Logout
+                </button>
+
+            </div>
+
+        </header>
+
+
+        <!-- APPLICATION LAYOUT -->
+        <div class="app-layout">
+
+            <!-- SIDEBAR -->
+            <aside class="sidebar-nav">
+
+                <div class="sidebar-title">
+                    MAIN MENU
+                </div>
+
+                <ul class="nav-menu">
+
+                    <li class="nav-item active" data-view="home">
+                        <span class="nav-icon">⌂</span>
+                        Dashboard
+                    </li>
+
+                    <li class="nav-item" data-view="donors">
+                        <span class="nav-icon">♙</span>
+                        Donors
+                    </li>
+
+                    <li class="nav-item" data-view="requests">
+                        <span class="nav-icon">♥</span>
+                        Blood Requests
+                    </li>
+
+                    <li class="nav-item" data-view="matching">
+                        <span class="nav-icon">⇄</span>
+                        Donor Matching
+                    </li>
+
+                    <li class="nav-item" data-view="reports">
+                        <span class="nav-icon">▥</span>
+                        Reports
+                    </li>
+
+                    <li class="nav-item" data-view="profile">
+                        <span class="nav-icon">◎</span>
+                        My Profile
+                    </li>
+
+                </ul>
+
+                <div class="sidebar-bottom">
+
+                    <div class="system-status">
+                        <span class="status-dot"></span>
+                        System Online
+                    </div>
+
+                    <small>
+                        Community Health Network
+                    </small>
+
+                </div>
+
+            </aside>
+
+
+            <!-- MAIN CONTENT -->
+            <main class="main-content">
+
+
+                <!-- =========================
+                     DASHBOARD
+                ========================== -->
+                <section id="viewHome" class="view active-view">
+
+                    <div class="welcome-banner">
+
+                        <div>
+                            <span class="section-label">
+                                DASHBOARD
+                            </span>
+
+                            <h2>
+                                Welcome, Administrator
+                            </h2>
+
+                            <p>
+                                Manage community blood donors,
+                                monitor blood requests, and find
+                                suitable donors for emergency needs.
+                            </p>
+                        </div>
+
+                        <div class="dashboard-date">
+                            <span id="currentDate"></span>
+                        </div>
+
+                    </div>
+
+
+                    <!-- STATISTICS -->
+                    <div class="stat-grid">
+
+                        <div class="stat-tile">
+                            <div class="stat-icon">♙</div>
+                            <div class="stat-value" id="totalDonors">0</div>
+                            <div class="stat-label">Registered Donors</div>
+                        </div>
+
+                        <div class="stat-tile teal">
+                            <div class="stat-icon">✓</div>
+                            <div class="stat-value" id="availableDonors">0</div>
+                            <div class="stat-label">Available Donors</div>
+                        </div>
+
+                        <div class="stat-tile amber">
+                            <div class="stat-icon">!</div>
+                            <div class="stat-value" id="pendingRequests">0</div>
+                            <div class="stat-label">Pending Requests</div>
+                        </div>
+
+                        <div class="stat-tile blue">
+                            <div class="stat-icon">♥</div>
+                            <div class="stat-value" id="totalRequests">0</div>
+                            <div class="stat-label">Blood Requests</div>
+                        </div>
+
+                    </div>
+
+
+                    <!-- QUICK ACTIONS -->
+                    <div class="card">
+
+                        <div class="card-header">
+                            <div>
+                                <span class="section-label">QUICK ACTIONS</span>
+                                <h2>System Operations</h2>
+                            </div>
+                        </div>
+
+                        <div class="card-body">
+
+                            <div class="quick-actions">
+
+                                <button class="action-card" data-open="donorModal">
+                                    <span class="action-icon">♙</span>
+                                    <strong>Register Donor</strong>
+                                    <small>Add a new volunteer blood donor.</small>
+                                </button>
+
+                                <button class="action-card" data-open="requestModal">
+                                    <span class="action-icon">♥</span>
+                                    <strong>Create Blood Request</strong>
+                                    <small>Record an emergency blood request.</small>
+                                </button>
+
+                                <button class="action-card" data-view-target="matching">
+                                    <span class="action-icon">⇄</span>
+                                    <strong>Find Matching Donors</strong>
+                                    <small>Search donors based on blood type.</small>
+                                </button>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- RECENT ACTIVITY -->
+                    <div class="card">
+
+                        <div class="card-header">
+                            <div>
+                                <span class="section-label">RECENT ACTIVITY</span>
+                                <h2>System Overview</h2>
+                            </div>
+                        </div>
+
+                        <div class="card-body">
+
+                            <div id="recentActivity" class="activity-list">
+                                <div class="empty-state">
+                                    <span>○</span>
+                                    <p>No recent activity.</p>
+                                </div>
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </section>
+
+
+                <!-- =========================
+                     DONORS
+                ========================== -->
+                <section id="viewDonors" class="view">
+
+                    <div class="page-heading">
+                        <div>
+                            <span class="section-label">DONOR MANAGEMENT</span>
+                            <h2>Registered Blood Donors</h2>
+                            <p>Manage community volunteers and their availability.</p>
+                        </div>
+
+                        <button class="btn-toolbar btn-success" data-open="donorModal">
+                            + Register Donor
+                        </button>
+                    </div>
+
+
+                    <div class="card">
+
+                        <div class="card-header">
+
+                            <div>
+                                <h2>Donor List</h2>
+                            </div>
+
+                            <input
+                                type="text"
+                                id="donorSearch"
+                                class="search-input"
+                                placeholder="Search donor..."
+                            >
+
+                        </div>
+
+                        <div class="table-responsive">
+
+                            <table class="data-table">
+
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Donor Name</th>
+                                        <th>Blood Type</th>
+                                        <th>Location</th>
+                                        <th>Contact</th>
+                                        <th>Status</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+
+                                <tbody id="donorTableBody">
+                                </tbody>
+
+                            </table>
+
+                        </div>
+
+                    </div>
+
+                </section>
+
+
+                <!-- =========================
+                     BLOOD REQUESTS
+                ========================== -->
+                <section id="viewRequests" class="view">
+
+                    <div class="page-heading">
+
+                        <div>
+                            <span class="section-label">EMERGENCY MANAGEMENT</span>
+                            <h2>Blood Requests</h2>
+                            <p>Monitor and manage community blood requests.</p>
+                        </div>
+
+                        <button class="btn-toolbar btn-alert" data-open="requestModal">
+                            + New Request
+                        </button>
+
+                    </div>
+
+
+                    <div class="card">
+
+                        <div class="card-header">
+                            <h2>Request Records</h2>
+                        </div>
+
+                        <div class="table-responsive">
+
+                            <table class="data-table">
+
+                                <thead>
+                                    <tr>
+                                        <th>Request ID</th>
+                                        <th>Patient</th>
+                                        <th>Blood Type</th>
+                                        <th>Hospital</th>
+                                        <th>Units</th>
+                                        <th>Urgency</th>
+                                        <th>Status</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+
+                                <tbody id="requestTableBody">
+                                </tbody>
+
+                            </table>
+
+                        </div>
+
+                    </div>
+
+                </section>
+
+
+                <!-- =========================
+                     MATCHING
+                ========================== -->
+                <section id="viewMatching" class="view">
+
+                    <div class="page-heading">
+
+                        <div>
+                            <span class="section-label">EMERGENCY MATCHING</span>
+                            <h2>Find Matching Donors</h2>
+                            <p>
+                                Identify available donors based on blood type.
+                            </p>
+                        </div>
+
+                    </div>
+
+
+                    <div class="card">
+
+                        <div class="card-header">
+                            <h2>Search Criteria</h2>
+                        </div>
+
+                        <div class="card-body">
+
+                            <div class="form-row">
+
+                                <div class="col">
+
+                                    <div class="form-group">
+                                        <label for="matchingBloodType">
+                                            Required Blood Type
+                                        </label>
+
+                                        <select
+                                            id="matchingBloodType"
+                                            class="form-control"
+                                        >
+                                            <option value="">Select blood type</option>
+                                            <option value="O+">O+</option>
+                                            <option value="O-">O-</option>
+                                            <option value="A+">A+</option>
+                                            <option value="A-">A-</option>
+                                            <option value="B+">B+</option>
+                                            <option value="B-">B-</option>
+                                            <option value="AB+">AB+</option>
+                                            <option value="AB-">AB-</option>
+                                        </select>
+
+                                    </div>
+
+                                </div>
+
+                                <div class="col">
+
+                                    <div class="form-group">
+                                        <label for="matchingLocation">
+                                            Location
+                                        </label>
+
+                                        <input
+                                            type="text"
+                                            id="matchingLocation"
+                                            class="form-control"
+                                            placeholder="Barangay / City"
+                                        >
+
+                                    </div>
+
+                                </div>
+
+                            </div>
+
+                            <button id="findMatchesBtn" class="btn-submit small-submit">
+                                Find Matching Donors
+                            </button>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="card">
+
+                        <div class="card-header">
+                            <h2>Matching Results</h2>
+                        </div>
+
+                        <div class="card-body">
+
+                            <div id="matchingResults">
+
+                                <div class="empty-state">
+                                    <span>⇄</span>
+                                    <p>
+                                        Select a blood type and click
+                                        "Find Matching Donors".
+                                    </p>
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </section>
+
+
+                <!-- =========================
+                     REPORTS
+                ========================== -->
+                <section id="viewReports" class="view">
+
+                    <div class="page-heading">
+
+                        <div>
+                            <span class="section-label">REPORTING</span>
+                            <h2>System Reports</h2>
+                            <p>View basic information about the system.</p>
+                        </div>
+
+                    </div>
+
+
+                    <div class="report-grid">
+
+                        <div class="report-box">
+                            <span class="report-number" id="reportDonors">0</span>
+                            <strong>Total Donors</strong>
+                            <small>Registered community donors</small>
+                        </div>
+
+                        <div class="report-box">
+                            <span class="report-number" id="reportAvailable">0</span>
+                            <strong>Available Donors</strong>
+                            <small>Donors currently available</small>
+                        </div>
+
+                        <div class="report-box">
+                            <span class="report-number" id="reportRequests">0</span>
+                            <strong>Total Requests</strong>
+                            <small>Recorded blood requests</small>
+                        </div>
+
+                        <div class="report-box">
+                            <span class="report-number" id="reportPending">0</span>
+                            <strong>Pending Requests</strong>
+                            <small>Requests awaiting action</small>
+                        </div>
+
+                    </div>
+
+                </section>
+
+
+                <!-- =========================
+                     PROFILE
+                ========================== -->
+                <section id="viewProfile" class="view">
+
+                    <div class="page-heading">
+
+                        <div>
+                            <span class="section-label">ACCOUNT</span>
+                            <h2>My Profile</h2>
+                            <p>System administrator account information.</p>
+                        </div>
+
+                    </div>
+
+
+                    <div class="card profile-card">
+
+                        <div class="card-header">
+                            <h2>Administrator Profile</h2>
+                        </div>
+
+                        <div class="card-body">
+
+                            <div class="profile-detail-grid">
+
+                                <div class="profile-detail">
+                                    <span class="label">Name</span>
+                                    <span class="value">System Administrator</span>
+                                </div>
+
+                                <div class="profile-detail">
+                                    <span class="label">Username</span>
+                                    <span class="value">admin</span>
+                                </div>
+
+                                <div class="profile-detail">
+                                    <span class="label">Role</span>
+                                    <span class="value">
+                                        <span class="badge role-admin">Administrator</span>
+                                    </span>
+                                </div>
+
+                                <div class="profile-detail">
+                                    <span class="label">Account Status</span>
+                                    <span class="value">
+                                        <span class="status-pill active">Active</span>
+                                    </span>
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </section>
+
+            </main>
+
+        </div>
+
+    </div>
+
+
+    <!-- =========================
+         DONOR MODAL
+    ========================== -->
+    <div id="donorModal" class="modal">
+
+        <div class="modal-content">
+
+            <button class="close-btn" data-close="donorModal">
+                ×
+            </button>
+
+            <span class="section-label">DONOR REGISTRATION</span>
+
+            <h2>Register New Donor</h2>
+
+            <form id="donorForm">
+
+                <div class="form-group">
+                    <label for="donorName">Full Name</label>
+                    <input
+                        type="text"
+                        id="donorName"
+                        class="form-control"
+                        placeholder="Enter full name"
+                        required
+                    >
+                </div>
+
+                <div class="form-row">
+
+                    <div class="col">
+
+                        <div class="form-group">
+                            <label for="donorBloodType">Blood Type</label>
+
+                            <select
+                                id="donorBloodType"
+                                class="form-control"
+                                required
+                            >
+                                <option value="">Select</option>
+                                <option value="O+">O+</option>
+                                <option value="O-">O-</option>
+                                <option value="A+">A+</option>
+                                <option value="A-">A-</option>
+                                <option value="B+">B+</option>
+                                <option value="B-">B-</option>
+                                <option value="AB+">AB+</option>
+                                <option value="AB-">AB-</option>
+                            </select>
+
+                        </div>
+
+                    </div>
+
+                    <div class="col">
+
+                        <div class="form-group">
+                            <label for="donorContact">Contact Number</label>
+                            <input
+                                type="text"
+                                id="donorContact"
+                                class="form-control"
+                                placeholder="09XXXXXXXXX"
+                                required
+                            >
+                        </div>
+
+                    </div>
+
+                </div>
+
+                <div class="form-group">
+                    <label for="donorLocation">Location</label>
+                    <input
+                        type="text"
+                        id="donorLocation"
+                        class="form-control"
+                        placeholder="Barangay / City"
+                        required
+                    >
+                </div>
+
+                <div class="form-group">
+                    <label for="donorStatus">Availability</label>
+
+                    <select id="donorStatus" class="form-control">
+                        <option value="Available">Available</option>
+                        <option value="Unavailable">Unavailable</option>
+                    </select>
+                </div>
+
+                <button type="submit" class="btn-submit">
+                    Register Donor
+                </button>
+
+            </form>
+
+        </div>
+
+    </div>
+
+
+    <!-- =========================
+         REQUEST MODAL
+    ========================== -->
+    <div id="requestModal" class="modal">
+
+        <div class="modal-content">
+
+            <button class="close-btn" data-close="requestModal">
+                ×
+            </button>
+
+            <span class="section-label">BLOOD REQUEST</span>
+
+            <h2>Create Blood Request</h2>
+
+            <form id="requestForm">
+
+                <div class="form-group">
+                    <label for="patientName">Patient Name</label>
+
+                    <input
+                        type="text"
+                        id="patientName"
+                        class="form-control"
+                        placeholder="Enter patient name"
+                        required
+                    >
+                </div>
+
+                <div class="form-row">
+
+                    <div class="col">
+
+                        <div class="form-group">
+                            <label for="requestBloodType">Blood Type</label>
+
+                            <select
+                                id="requestBloodType"
+                                class="form-control"
+                                required
+                            >
+                                <option value="">Select</option>
+                                <option value="O+">O+</option>
+                                <option value="O-">O-</option>
+                                <option value="A+">A+</option>
+                                <option value="A-">A-</option>
+                                <option value="B+">B+</option>
+                                <option value="B-">B-</option>
+                                <option value="AB+">AB+</option>
+                                <option value="AB-">AB-</option>
+                            </select>
+
+                        </div>
+
+                    </div>
+
+                    <div class="col">
+
+                        <div class="form-group">
+                            <label for="requestUnits">Units Needed</label>
+
+                            <input
+                                type="number"
+                                id="requestUnits"
+                                class="form-control"
+                                min="1"
+                                value="1"
+                                required
+                            >
+                        </div>
+
+                    </div>
+
+                </div>
+
+                <div class="form-group">
+                    <label for="hospitalName">Hospital / Health Center</label>
+
+                    <input
+                        type="text"
+                        id="hospitalName"
+                        class="form-control"
+                        placeholder="Enter hospital or health center"
+                        required
+                    >
+                </div>
+
+                <div class="form-group">
+                    <label for="requestUrgency">Urgency</label>
+
+                    <select id="requestUrgency" class="form-control">
+
+                        <option value="Normal">Normal</option>
+                        <option value="Urgent">Urgent</option>
+                        <option value="Emergency">Emergency</option>
+
+                    </select>
+
+                </div>
+
+                <button type="submit" class="btn-submit">
+                    Submit Blood Request
+                </button>
+
+            </form>
+
+        </div>
+
+    </div>
+
+
+    <!-- NOTIFICATION -->
+    <div id="notification" class="notification">
+        <span id="notificationMessage"></span>
+    </div>
+
+
+    <!-- CONNECT JAVASCRIPT -->
+    <script src="script.js"></script>
+
+</body>
+</html>
