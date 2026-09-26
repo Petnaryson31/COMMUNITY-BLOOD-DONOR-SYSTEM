@@ -1,1183 +1,1193 @@
-/* ============================================================
+/* =========================================================
    COMMUNITY BLOOD DONOR MANAGEMENT SYSTEM
-   JavaScript
-   ============================================================ */
+   JAVASCRIPT
+========================================================= */
 
 
-/* ============================================================
-   SAMPLE DATA
-   ============================================================ */
+/* =========================================================
+   DATABASE USING LOCAL STORAGE
+========================================================= */
 
-let donors = JSON.parse(localStorage.getItem("bloodDonors")) || [
-    {
-        id: "D-001",
-        name: "Juan Dela Cruz",
-        bloodType: "O+",
-        location: "Barangay Labangal",
-        contact: "09123456789",
-        status: "Available"
-    },
-    {
-        id: "D-002",
-        name: "Maria Santos",
-        bloodType: "A+",
-        location: "Barangay Calumpang",
-        contact: "09234567890",
-        status: "Available"
-    },
-    {
-        id: "D-003",
-        name: "Mark Reyes",
-        bloodType: "B+",
-        location: "Barangay Lagao",
-        contact: "09345678901",
-        status: "Unavailable"
-    }
-];
+let accounts = JSON.parse(
+    localStorage.getItem("bloodDonorAccounts")
+) || [];
+
+let currentUser = JSON.parse(
+    localStorage.getItem("currentBloodUser")
+) || null;
 
 
-let requests = JSON.parse(localStorage.getItem("bloodRequests")) || [
-    {
-        id: "REQ-001",
-        patient: "Sample Patient",
-        bloodType: "O+",
-        hospital: "Community Health Center",
-        units: 2,
-        urgency: "Emergency",
-        status: "Pending"
-    }
-];
-
-
-let activities = JSON.parse(localStorage.getItem("activities")) || [];
-
-
-/* ============================================================
-   PAGE ELEMENTS
-   ============================================================ */
-
-const loginPage = document.getElementById("loginPage");
-const app = document.getElementById("app");
-
-const loginForm = document.getElementById("loginForm");
-const logoutBtn = document.getElementById("logoutBtn");
-
-const donorForm = document.getElementById("donorForm");
-const requestForm = document.getElementById("requestForm");
-
-const donorTableBody = document.getElementById("donorTableBody");
-const requestTableBody = document.getElementById("requestTableBody");
-
-const donorSearch = document.getElementById("donorSearch");
-
-const notification = document.getElementById("notification");
-const notificationMessage =
-    document.getElementById("notificationMessage");
-
-
-/* ============================================================
-   LOGIN
-   ============================================================ */
-
-loginForm.addEventListener("submit", function (event) {
-
-    event.preventDefault();
-
-    const username =
-        document.getElementById("loginUsername").value.trim();
-
-    const password =
-        document.getElementById("loginPassword").value.trim();
-
-
-    /*
-       Demo login:
-       Username: admin
-       Password: admin123
-    */
-
-    if (username === "admin" && password === "admin123") {
-
-        sessionStorage.setItem("loggedIn", "true");
-
-        loginPage.style.display = "none";
-
-        app.classList.remove("app-hidden");
-
-        initializeSystem();
-
-        showNotification("Welcome back, Administrator.");
-
-    } else {
-
-        showNotification(
-            "Invalid username or password. Use admin / admin123."
-        );
-
-    }
-
-});
-
-
-/* ============================================================
-   LOGOUT
-   ============================================================ */
-
-logoutBtn.addEventListener("click", function () {
-
-    sessionStorage.removeItem("loggedIn");
-
-    app.classList.add("app-hidden");
-
-    loginPage.style.display = "flex";
-
-    document.getElementById("loginPassword").value = "";
-
-    showNotification("You have been logged out.");
-
-});
-
-
-/* ============================================================
-   CHECK LOGIN WHEN PAGE LOADS
-   ============================================================ */
+/* =========================================================
+   PAGE START
+========================================================= */
 
 document.addEventListener("DOMContentLoaded", function () {
 
-    if (sessionStorage.getItem("loggedIn") === "true") {
+    initializeSystem();
 
-        loginPage.style.display = "none";
+    document
+        .getElementById("loginForm")
+        .addEventListener("submit", loginUser);
 
-        app.classList.remove("app-hidden");
+    document
+        .getElementById("registerForm")
+        .addEventListener("submit", registerUser);
 
-        initializeSystem();
-
-    }
+    document
+        .getElementById("registerRole")
+        .addEventListener("change", showDonorFields);
 
 });
 
 
-/* ============================================================
-   INITIALIZE SYSTEM
-   ============================================================ */
+/* =========================================================
+   INITIALIZE
+========================================================= */
 
 function initializeSystem() {
 
-    updateDashboard();
-
-    renderDonors();
-
-    renderRequests();
-
-    renderActivities();
-
-    updateDate();
+    if (currentUser) {
+        openApplication(currentUser);
+    } else {
+        showLogin();
+    }
 
 }
 
 
-/* ============================================================
-   SIDEBAR NAVIGATION
-   ============================================================ */
+/* =========================================================
+   LOGIN / REGISTER PAGE
+========================================================= */
 
-document.querySelectorAll(".nav-item").forEach(function (item) {
+function showLogin() {
 
-    item.addEventListener("click", function () {
+    document
+        .getElementById("loginSection")
+        .classList.remove("hidden");
 
-        const targetView = item.dataset.view;
-
-        showView(targetView);
-
-    });
-
-});
-
-
-/* ============================================================
-   SHOW VIEW
-   ============================================================ */
-
-function showView(viewName) {
-
-    document.querySelectorAll(".view").forEach(function (view) {
-
-        view.classList.remove("active-view");
-
-    });
-
-
-    const selectedView =
-        document.getElementById("view" + capitalize(viewName));
-
-
-    if (selectedView) {
-
-        selectedView.classList.add("active-view");
-
-    }
-
-
-    document.querySelectorAll(".nav-item").forEach(function (item) {
-
-        item.classList.remove("active");
-
-    });
-
-
-    const activeNav =
-        document.querySelector(
-            `.nav-item[data-view="${viewName}"]`
-        );
-
-
-    if (activeNav) {
-
-        activeNav.classList.add("active");
-
-    }
-
-
-    window.scrollTo({
-        top: 0,
-        behavior: "smooth"
-    });
+    document
+        .getElementById("registerSection")
+        .classList.add("hidden");
 
 }
 
 
-/* ============================================================
-   QUICK ACTION NAVIGATION
-   ============================================================ */
+function showRegister() {
 
-document.querySelectorAll("[data-view-target]").forEach(function (button) {
+    document
+        .getElementById("loginSection")
+        .classList.add("hidden");
 
-    button.addEventListener("click", function () {
+    document
+        .getElementById("registerSection")
+        .classList.remove("hidden");
 
-        showView(button.dataset.viewTarget);
-
-    });
-
-});
+}
 
 
-/* ============================================================
-   OPEN MODALS
-   ============================================================ */
+function showDonorFields() {
 
-document.querySelectorAll("[data-open]").forEach(function (button) {
+    const role =
+        document.getElementById("registerRole").value;
 
-    button.addEventListener("click", function () {
+    const fields =
+        document.getElementById("donorRegisterFields");
 
-        const modalId = button.dataset.open;
+    if (role === "donor") {
 
-        openModal(modalId);
+        fields.classList.remove("hidden");
 
-    });
+    } else {
 
-});
-
-
-/* ============================================================
-   CLOSE MODALS
-   ============================================================ */
-
-document.querySelectorAll("[data-close]").forEach(function (button) {
-
-    button.addEventListener("click", function () {
-
-        const modalId = button.dataset.close;
-
-        closeModal(modalId);
-
-    });
-
-});
-
-
-/* ============================================================
-   CLOSE MODAL WHEN CLICKING OUTSIDE
-   ============================================================ */
-
-document.querySelectorAll(".modal").forEach(function (modal) {
-
-    modal.addEventListener("click", function (event) {
-
-        if (event.target === modal) {
-
-            modal.classList.remove("show");
-
-        }
-
-    });
-
-});
-
-
-function openModal(id) {
-
-    const modal = document.getElementById(id);
-
-    if (modal) {
-
-        modal.classList.add("show");
+        fields.classList.add("hidden");
 
     }
 
 }
 
 
-function closeModal(id) {
+/* =========================================================
+   CREATE ACCOUNT
+========================================================= */
 
-    const modal = document.getElementById(id);
-
-    if (modal) {
-
-        modal.classList.remove("show");
-
-    }
-
-}
-
-
-/* ============================================================
-   REGISTER DONOR
-   ============================================================ */
-
-donorForm.addEventListener("submit", function (event) {
+function registerUser(event) {
 
     event.preventDefault();
 
+    const name =
+        document.getElementById("registerName").value.trim();
 
-    const donor = {
+    const email =
+        document.getElementById("registerEmail").value
+        .trim()
+        .toLowerCase();
 
-        id: generateDonorId(),
+    const password =
+        document.getElementById("registerPassword").value;
 
-        name:
-            document.getElementById("donorName").value.trim(),
+    const role =
+        document.getElementById("registerRole").value;
+
+
+    if (!name || !email || !password || !role) {
+
+        showRegisterMessage(
+            "Please complete all required fields.",
+            "error"
+        );
+
+        return;
+    }
+
+
+    /* CHECK EXISTING EMAIL */
+
+    const existingAccount = accounts.find(
+        account => account.email === email
+    );
+
+    if (existingAccount) {
+
+        showRegisterMessage(
+            "An account with this email already exists.",
+            "error"
+        );
+
+        return;
+    }
+
+
+    /* CREATE ACCOUNT */
+
+    const newAccount = {
+
+        id:
+            "USR-" +
+            String(accounts.length + 1).padStart(3, "0"),
+
+        name: name,
+
+        email: email,
+
+        password: password,
+
+        role: role,
+
+        status: "Active",
+
+        availability: role === "donor"
+            ? "Available"
+            : "N/A",
 
         bloodType:
-            document.getElementById("donorBloodType").value,
+            role === "donor"
+                ? document.getElementById("registerBlood").value
+                : "N/A",
 
-        location:
-            document.getElementById("donorLocation").value.trim(),
+        phone:
+            role === "donor"
+                ? document.getElementById("registerPhone").value
+                : "N/A",
 
-        contact:
-            document.getElementById("donorContact").value.trim(),
+        address:
+            role === "donor"
+                ? document.getElementById("registerAddress").value
+                : "N/A",
 
-        status:
-            document.getElementById("donorStatus").value
+        createdAt:
+            new Date().toLocaleDateString()
 
     };
 
 
-    donors.push(donor);
+    accounts.push(newAccount);
 
 
-    saveData();
-
-    renderDonors();
-
-    updateDashboard();
-
-
-    addActivity(
-        `New donor registered: ${donor.name} (${donor.bloodType})`
+    localStorage.setItem(
+        "bloodDonorAccounts",
+        JSON.stringify(accounts)
     );
 
 
-    donorForm.reset();
-
-    closeModal("donorModal");
-
-
-    showNotification(
-        "Donor registered successfully."
+    showRegisterMessage(
+        "Account successfully created! You can now sign in.",
+        "success"
     );
 
-});
 
+    document
+        .getElementById("registerForm")
+        .reset();
 
-/* ============================================================
-   GENERATE DONOR ID
-   ============================================================ */
-
-function generateDonorId() {
-
-    return "D-" +
-        String(donors.length + 1).padStart(3, "0");
+    document
+        .getElementById("donorRegisterFields")
+        .classList.add("hidden");
 
 }
 
 
-/* ============================================================
-   RENDER DONORS
-   ============================================================ */
+/* =========================================================
+   LOGIN
+========================================================= */
 
-function renderDonors(searchTerm = "") {
+function loginUser(event) {
 
-    donorTableBody.innerHTML = "";
+    event.preventDefault();
+
+    const email =
+        document.getElementById("loginEmail")
+        .value
+        .trim()
+        .toLowerCase();
+
+    const password =
+        document.getElementById("loginPassword")
+        .value;
 
 
-    const filteredDonors = donors.filter(function (donor) {
+    const account = accounts.find(
+        user =>
+            user.email === email &&
+            user.password === password
+    );
 
-        const search =
-            searchTerm.toLowerCase();
 
-        return (
-            donor.name.toLowerCase().includes(search) ||
-            donor.bloodType.toLowerCase().includes(search) ||
-            donor.location.toLowerCase().includes(search) ||
-            donor.id.toLowerCase().includes(search)
+    if (!account) {
+
+        showLoginMessage(
+            "Incorrect email or password. Please create an account first or check your information.",
+            "error"
         );
 
-    });
+        return;
+    }
 
 
-    if (filteredDonors.length === 0) {
+    /* SAVE CURRENT USER */
 
-        donorTableBody.innerHTML = `
+    currentUser = account;
+
+    localStorage.setItem(
+        "currentBloodUser",
+        JSON.stringify(account)
+    );
+
+
+    openApplication(account);
+
+}
+
+
+/* =========================================================
+   OPEN APPLICATION
+========================================================= */
+
+function openApplication(user) {
+
+    document
+        .getElementById("loginPage")
+        .classList.add("hidden");
+
+    document
+        .getElementById("appPage")
+        .classList.remove("hidden");
+
+
+    document
+        .getElementById("headerUserName")
+        .textContent = user.name;
+
+
+    document
+        .getElementById("headerUserRole")
+        .textContent =
+            user.role === "admin"
+                ? "City Health Worker / Admin"
+                : "Blood Donor / Volunteer";
+
+
+    /* HIDE BOTH MENUS FIRST */
+
+    document
+        .getElementById("adminMenu")
+        .classList.add("hidden");
+
+    document
+        .getElementById("donorMenu")
+        .classList.add("hidden");
+
+
+    /* ADMIN */
+
+    if (user.role === "admin") {
+
+        document
+            .getElementById("adminMenu")
+            .classList.remove("hidden");
+
+        showView(
+            "adminDashboard",
+            document.querySelector(
+                "#adminMenu li"
+            )
+        );
+
+        updateAdminDashboard();
+
+    }
+
+
+    /* DONOR */
+
+    else if (user.role === "donor") {
+
+        document
+            .getElementById("donorMenu")
+            .classList.remove("hidden");
+
+        showView(
+            "donorDashboard",
+            document.querySelector(
+                "#donorMenu li"
+            )
+        );
+
+        updateDonorDashboard();
+
+    }
+
+}
+
+
+/* =========================================================
+   LOGOUT
+========================================================= */
+
+function logout() {
+
+    localStorage.removeItem("currentBloodUser");
+
+    currentUser = null;
+
+    document
+        .getElementById("appPage")
+        .classList.add("hidden");
+
+    document
+        .getElementById("loginPage")
+        .classList.remove("hidden");
+
+    document
+        .getElementById("loginForm")
+        .reset();
+
+    showLogin();
+
+}
+
+
+/* =========================================================
+   DASHBOARD NAVIGATION
+========================================================= */
+
+function showView(viewId, clickedItem) {
+
+    /* SECURITY CHECK */
+
+    const adminViews = [
+        "adminDashboard",
+        "donorManagement",
+        "bloodRequests",
+        "emergencyMatching",
+        "reports",
+        "userAccounts"
+    ];
+
+    const donorViews = [
+        "donorDashboard",
+        "myProfile",
+        "availability",
+        "donorRequests",
+        "notifications"
+    ];
+
+
+    if (!currentUser) {
+        return;
+    }
+
+
+    /* PREVENT DONOR FROM ACCESSING ADMIN */
+
+    if (
+        currentUser.role === "donor" &&
+        adminViews.includes(viewId)
+    ) {
+
+        alert(
+            "Access denied. This information is confidential and only available to City Health Workers."
+        );
+
+        return;
+    }
+
+
+    /* PREVENT ADMIN FROM ACCESSING DONOR MENU */
+
+    if (
+        currentUser.role === "admin" &&
+        donorViews.includes(viewId)
+    ) {
+
+        alert(
+            "This page is intended for blood donor accounts."
+        );
+
+        return;
+    }
+
+
+    /* HIDE ALL VIEWS */
+
+    document
+        .querySelectorAll(".view")
+        .forEach(view => {
+            view.classList.add("hidden");
+        });
+
+
+    /* SHOW SELECTED VIEW */
+
+    const selectedView =
+        document.getElementById(viewId);
+
+    if (selectedView) {
+        selectedView.classList.remove("hidden");
+    }
+
+
+    /* UPDATE ACTIVE MENU */
+
+    document
+        .querySelectorAll(".sidebar-nav li")
+        .forEach(item => {
+            item.classList.remove("active");
+        });
+
+
+    if (clickedItem) {
+        clickedItem.classList.add("active");
+    }
+
+
+    /* LOAD DATA */
+
+    if (viewId === "donorManagement") {
+        loadDonorTable();
+    }
+
+    if (viewId === "userAccounts") {
+        loadAccountTable();
+    }
+
+    if (viewId === "myProfile") {
+        updateProfile();
+    }
+
+}
+
+
+/* =========================================================
+   ADMIN DASHBOARD
+========================================================= */
+
+function updateAdminDashboard() {
+
+    const donors =
+        accounts.filter(
+            account => account.role === "donor"
+        );
+
+
+    const available =
+        donors.filter(
+            donor => donor.availability === "Available"
+        );
+
+
+    document
+        .getElementById("totalDonors")
+        .textContent = donors.length;
+
+
+    document
+        .getElementById("availableDonors")
+        .textContent = available.length;
+
+}
+
+
+/* =========================================================
+   DONOR TABLE
+   CONFIDENTIAL ADMIN INFORMATION
+========================================================= */
+
+function loadDonorTable() {
+
+    if (!currentUser || currentUser.role !== "admin") {
+        return;
+    }
+
+
+    const donors =
+        accounts.filter(
+            account => account.role === "donor"
+        );
+
+
+    const table =
+        document.getElementById("donorTableBody");
+
+
+    table.innerHTML = "";
+
+
+    if (donors.length === 0) {
+
+        table.innerHTML = `
             <tr>
-                <td colspan="7" class="empty-row">
-                    No donors found.
+                <td colspan="6" class="empty-message">
+                    No blood donors have registered yet.
                 </td>
             </tr>
         `;
 
         return;
-
     }
 
 
-    filteredDonors.forEach(function (donor) {
+    donors.forEach(donor => {
 
-        const row = document.createElement("tr");
-
-
-        const statusClass =
-            donor.status === "Available"
-                ? "active"
-                : "inactive";
+        const row =
+            document.createElement("tr");
 
 
         row.innerHTML = `
 
-            <td>${donor.id}</td>
+            <td>
+                ${donor.id}
+            </td>
 
             <td>
-                <strong>${escapeHTML(donor.name)}</strong>
+                ${escapeHTML(donor.name)}
             </td>
 
             <td>
                 <span class="blood-type-tag">
-                    ${donor.bloodType}
+                    ${donor.bloodType || "—"}
                 </span>
             </td>
 
             <td>
-                ${escapeHTML(donor.location)}
+                ${escapeHTML(donor.phone || "—")}
             </td>
 
             <td>
-                ${escapeHTML(donor.contact)}
+                ${donor.availability || "—"}
             </td>
 
             <td>
-                <span class="status-pill ${statusClass}">
+                <span class="status-pill verified">
                     ${donor.status}
                 </span>
             </td>
 
-            <td>
-
-                <button
-                    class="table-btn ${donor.status === "Available" ? "delete" : "match"}"
-                    onclick="toggleDonorStatus('${donor.id}')"
-                >
-                    ${donor.status === "Available"
-                        ? "Disable"
-                        : "Activate"}
-                </button>
-
-            </td>
-
         `;
 
 
-        donorTableBody.appendChild(row);
+        table.appendChild(row);
 
     });
 
 }
 
 
-/* ============================================================
-   SEARCH DONORS
-   ============================================================ */
+/* =========================================================
+   ACCOUNT TABLE
+========================================================= */
 
-donorSearch.addEventListener("input", function () {
+function loadAccountTable() {
 
-    renderDonors(donorSearch.value);
-
-});
-
-
-/* ============================================================
-   TOGGLE DONOR STATUS
-   ============================================================ */
-
-function toggleDonorStatus(id) {
-
-    const donor = donors.find(function (item) {
-
-        return item.id === id;
-
-    });
-
-
-    if (!donor) {
+    if (!currentUser || currentUser.role !== "admin") {
         return;
     }
 
 
-    if (donor.status === "Available") {
+    const table =
+        document.getElementById("accountTableBody");
 
-        donor.status = "Unavailable";
 
-    } else {
+    table.innerHTML = "";
 
-        donor.status = "Available";
 
-    }
+    accounts.forEach(account => {
 
+        const row =
+            document.createElement("tr");
 
-    saveData();
 
-    renderDonors();
-
-    updateDashboard();
-
-
-    addActivity(
-        `${donor.name} is now ${donor.status}.`
-    );
-
-
-    showNotification(
-        `Donor status updated to ${donor.status}.`
-    );
-
-}
-
-
-/* ============================================================
-   CREATE BLOOD REQUEST
-   ============================================================ */
-
-requestForm.addEventListener("submit", function (event) {
-
-    event.preventDefault();
-
-
-    const request = {
-
-        id: generateRequestId(),
-
-        patient:
-            document.getElementById("patientName").value.trim(),
-
-        bloodType:
-            document.getElementById("requestBloodType").value,
-
-        hospital:
-            document.getElementById("hospitalName").value.trim(),
-
-        units:
-            Number(
-                document.getElementById("requestUnits").value
-            ),
-
-        urgency:
-            document.getElementById("requestUrgency").value,
-
-        status: "Pending"
-
-    };
-
-
-    requests.push(request);
-
-
-    saveData();
-
-    renderRequests();
-
-    updateDashboard();
-
-
-    addActivity(
-        `Blood request created for ${request.patient} (${request.bloodType}).`
-    );
-
-
-    requestForm.reset();
-
-    closeModal("requestModal");
-
-
-    showNotification(
-        "Blood request created successfully."
-    );
-
-});
-
-
-/* ============================================================
-   GENERATE REQUEST ID
-   ============================================================ */
-
-function generateRequestId() {
-
-    return "REQ-" +
-        String(requests.length + 1).padStart(3, "0");
-
-}
-
-
-/* ============================================================
-   RENDER REQUESTS
-   ============================================================ */
-
-function renderRequests() {
-
-    requestTableBody.innerHTML = "";
-
-
-    if (requests.length === 0) {
-
-        requestTableBody.innerHTML = `
-            <tr>
-                <td colspan="8" class="empty-row">
-                    No blood requests recorded.
-                </td>
-            </tr>
-        `;
-
-        return;
-
-    }
-
-
-    requests.forEach(function (request) {
-
-        const row = document.createElement("tr");
-
-
-        let urgencyClass = "pending";
-
-
-        if (request.urgency === "Emergency") {
-
-            urgencyClass = "emergency";
-
-        }
+        const roleName =
+            account.role === "admin"
+                ? "City Health Worker / Admin"
+                : "Blood Donor / Volunteer";
 
 
         row.innerHTML = `
 
-            <td>${request.id}</td>
-
             <td>
-                <strong>
-                    ${escapeHTML(request.patient)}
-                </strong>
+                ${account.id}
             </td>
 
             <td>
-                <span class="blood-type-tag">
-                    ${request.bloodType}
-                </span>
+                ${escapeHTML(account.name)}
             </td>
 
             <td>
-                ${escapeHTML(request.hospital)}
+                ${escapeHTML(account.email)}
             </td>
 
             <td>
-                ${request.units}
-            </td>
-
-            <td>
-                <span class="status-pill ${urgencyClass}">
-                    ${request.urgency}
-                </span>
-            </td>
-
-            <td>
-                <span class="status-pill pending">
-                    ${request.status}
-                </span>
-            </td>
-
-            <td>
-
-                <button
-                    class="table-btn match"
-                    onclick="matchRequest('${request.id}')"
-                >
-                    Find Donors
-                </button>
-
+                ${roleName}
             </td>
 
         `;
 
 
-        requestTableBody.appendChild(row);
+        table.appendChild(row);
 
     });
 
 }
 
 
-/* ============================================================
-   MATCH REQUEST
-   ============================================================ */
+/* =========================================================
+   DONOR DASHBOARD
+========================================================= */
 
-function matchRequest(requestId) {
+function updateDonorDashboard() {
 
-    const request = requests.find(function (item) {
-
-        return item.id === requestId;
-
-    });
-
-
-    if (!request) {
+    if (!currentUser) {
         return;
     }
 
 
-    showView("matching");
+    document
+        .getElementById("donorWelcomeName")
+        .textContent = currentUser.name;
 
 
-    document.getElementById(
-        "matchingBloodType"
-    ).value = request.bloodType;
+    document
+        .getElementById("donorBloodDisplay")
+        .textContent =
+            currentUser.bloodType || "—";
 
 
-    findMatchingDonors();
+    document
+        .getElementById("donorAvailabilityDisplay")
+        .textContent =
+            currentUser.availability || "Available";
 
 
-    addActivity(
-        `Matching search performed for request ${request.id}.`
-    );
+    updateProfile();
+
+    updateAvailabilityUI();
 
 }
 
 
-/* ============================================================
-   DONOR MATCHING ALGORITHM
-   ============================================================ */
+/* =========================================================
+   PROFILE
+========================================================= */
 
-document.getElementById("findMatchesBtn")
-    .addEventListener("click", findMatchingDonors);
+function updateProfile() {
+
+    if (!currentUser) {
+        return;
+    }
 
 
-function findMatchingDonors() {
+    document
+        .getElementById("profileName")
+        .textContent = currentUser.name;
 
-    const bloodType =
+
+    document
+        .getElementById("profileEmail")
+        .textContent = currentUser.email;
+
+
+    document
+        .getElementById("profileBlood")
+        .textContent =
+            currentUser.bloodType || "—";
+
+
+    document
+        .getElementById("profilePhone")
+        .textContent =
+            currentUser.phone || "—";
+
+
+    document
+        .getElementById("profileAddress")
+        .textContent =
+            currentUser.address || "—";
+
+}
+
+
+/* =========================================================
+   DONOR AVAILABILITY
+========================================================= */
+
+function toggleAvailability() {
+
+    if (!currentUser || currentUser.role !== "donor") {
+        return;
+    }
+
+
+    const newStatus =
+        currentUser.availability === "Available"
+            ? "Unavailable"
+            : "Available";
+
+
+    currentUser.availability = newStatus;
+
+
+    /* UPDATE ACCOUNT DATABASE */
+
+    accounts =
+        accounts.map(account => {
+
+            if (account.id === currentUser.id) {
+                return currentUser;
+            }
+
+            return account;
+
+        });
+
+
+    localStorage.setItem(
+        "bloodDonorAccounts",
+        JSON.stringify(accounts)
+    );
+
+
+    localStorage.setItem(
+        "currentBloodUser",
+        JSON.stringify(currentUser)
+    );
+
+
+    updateAvailabilityUI();
+
+    updateDonorDashboard();
+
+}
+
+
+function updateAvailabilityUI() {
+
+    if (!currentUser) {
+        return;
+    }
+
+
+    const statusText =
         document.getElementById(
-            "matchingBloodType"
-        ).value;
+            "availabilityStatusText"
+        );
+
+    const button =
+        document.getElementById(
+            "availabilityButton"
+        );
+
+
+    if (currentUser.availability === "Available") {
+
+        statusText.textContent = "Available";
+
+        button.textContent = "Set Unavailable";
+
+        button.className = "btn-toggle-on";
+
+    } else {
+
+        statusText.textContent = "Unavailable";
+
+        button.textContent = "Set Available";
+
+        button.className = "btn-toggle-off";
+
+    }
+
+}
+
+
+/* =========================================================
+   EMERGENCY MATCHING ALGORITHM
+========================================================= */
+
+function runMatching() {
+
+    if (!currentUser || currentUser.role !== "admin") {
+
+        alert(
+            "Only City Health Workers can use the emergency matching function."
+        );
+
+        return;
+    }
+
+
+    const requiredBlood =
+        document.getElementById("matchBlood").value;
 
 
     const location =
-        document.getElementById(
-            "matchingLocation"
-        ).value.trim().toLowerCase();
+        document.getElementById("matchLocation").value
+        .trim()
+        .toLowerCase();
 
 
-    const results =
-        document.getElementById("matchingResults");
-
-
-    if (!bloodType) {
-
-        results.innerHTML = `
-            <div class="empty-state">
-                <span>!</span>
-                <p>
-                    Please select a required blood type.
-                </p>
-            </div>
-        `;
-
-        return;
-
-    }
+    const donors =
+        accounts.filter(
+            donor =>
+                donor.role === "donor" &&
+                donor.availability === "Available"
+        );
 
 
     /*
        BASIC MATCHING ALGORITHM
 
-       1. Blood type must match.
+       1. Donor must be registered.
        2. Donor must be available.
-       3. If location is provided,
-          location is also checked.
+       3. Blood type should match.
+       4. Location can be considered when available.
     */
 
-    let matches = donors.filter(function (donor) {
 
-        const bloodMatch =
-            donor.bloodType === bloodType;
-
-        const available =
-            donor.status === "Available";
-
-        const locationMatch =
-            !location ||
-            donor.location.toLowerCase()
-                .includes(location);
-
-
-        return (
-            bloodMatch &&
-            available &&
-            locationMatch
+    const matches =
+        donors.filter(
+            donor =>
+                donor.bloodType === requiredBlood
         );
 
-    });
+
+    const results =
+        document.getElementById(
+            "matchingResults"
+        );
 
 
-    /*
-       If no location-specific match is found,
-       show available blood-type matches.
-    */
-
-    if (matches.length === 0 && location) {
-
-        matches = donors.filter(function (donor) {
-
-            return (
-                donor.bloodType === bloodType &&
-                donor.status === "Available"
-            );
-
-        });
-
-    }
+    results.innerHTML = "";
 
 
     if (matches.length === 0) {
 
         results.innerHTML = `
-            <div class="empty-state">
-                <span>○</span>
-                <p>
-                    No available donors match
-                    blood type ${bloodType}.
-                </p>
+            <div class="notice notice-warning">
+
+                <span>!</span>
+
+                <div>
+                    <strong>
+                        No matching donor found.
+                    </strong>
+
+                    <small>
+                        No currently available donor
+                        matches blood type ${requiredBlood}.
+                    </small>
+                </div>
+
             </div>
         `;
 
         return;
-
     }
 
 
-    results.innerHTML = `
+    matches.forEach((donor, index) => {
 
-        <div class="notice-box">
+        const result =
+            document.createElement("div");
 
-            <strong>
-                ${matches.length}
-                matching donor(s) found
-            </strong>
 
-            <span>
-                Required blood type:
-                ${bloodType}
-            </span>
+        result.className = "match-result";
 
+
+        result.innerHTML = `
+
+            <div>
+
+                <h4>
+                    ${escapeHTML(donor.name)}
+                </h4>
+
+                <p>
+                    Blood Type:
+                    <strong>
+                        ${donor.bloodType}
+                    </strong>
+                    |
+                    Location:
+                    ${escapeHTML(donor.address || "Not provided")}
+                </p>
+
+            </div>
+
+            <div class="match-score">
+                MATCH #${index + 1}
+            </div>
+
+        `;
+
+
+        results.appendChild(result);
+
+    });
+
+}
+
+
+/* =========================================================
+   REPORTS
+========================================================= */
+
+function generateDonorReport() {
+
+    if (!isAdmin()) return;
+
+
+    const donors =
+        accounts.filter(
+            account => account.role === "donor"
+        );
+
+
+    const available =
+        donors.filter(
+            donor =>
+                donor.availability === "Available"
+        );
+
+
+    document
+        .getElementById("reportOutput")
+        .innerHTML = `
+
+            <h4>Donor Report</h4>
+
+            <p>
+                Total registered donors:
+                <strong>${donors.length}</strong>
+            </p>
+
+            <p>
+                Currently available:
+                <strong>${available.length}</strong>
+            </p>
+
+        `;
+
+}
+
+
+function generateBloodReport() {
+
+    if (!isAdmin()) return;
+
+
+    const donors =
+        accounts.filter(
+            account => account.role === "donor"
+        );
+
+
+    const bloodTypes = {};
+
+
+    donors.forEach(donor => {
+
+        const type =
+            donor.bloodType || "Unknown";
+
+        bloodTypes[type] =
+            (bloodTypes[type] || 0) + 1;
+
+    });
+
+
+    let output = "";
+
+    Object.keys(bloodTypes).forEach(type => {
+
+        output += `
+            <p>
+                <strong>${type}</strong>:
+                ${bloodTypes[type]} donor(s)
+            </p>
+        `;
+
+    });
+
+
+    document
+        .getElementById("reportOutput")
+        .innerHTML = `
+
+            <h4>Blood Type Report</h4>
+
+            ${
+                output ||
+                "<p>No donor data available.</p>"
+            }
+
+        `;
+
+}
+
+
+function generateAvailabilityReport() {
+
+    if (!isAdmin()) return;
+
+
+    const donors =
+        accounts.filter(
+            account => account.role === "donor"
+        );
+
+
+    const available =
+        donors.filter(
+            donor =>
+                donor.availability === "Available"
+        ).length;
+
+
+    const unavailable =
+        donors.length - available;
+
+
+    document
+        .getElementById("reportOutput")
+        .innerHTML = `
+
+            <h4>Availability Report</h4>
+
+            <p>
+                Available:
+                <strong>${available}</strong>
+            </p>
+
+            <p>
+                Unavailable:
+                <strong>${unavailable}</strong>
+            </p>
+
+        `;
+
+}
+
+
+/* =========================================================
+   CREATE REQUEST
+========================================================= */
+
+function createRequest() {
+
+    if (!isAdmin()) return;
+
+
+    alert(
+        "New Blood Request function is ready for database integration."
+    );
+
+}
+
+
+/* =========================================================
+   SECURITY HELPER
+========================================================= */
+
+function isAdmin() {
+
+    if (!currentUser || currentUser.role !== "admin") {
+
+        alert(
+            "Access denied. Only City Health Workers can access this section."
+        );
+
+        return false;
+    }
+
+    return true;
+}
+
+
+/* =========================================================
+   MESSAGE FUNCTIONS
+========================================================= */
+
+function showLoginMessage(message, type) {
+
+    const box =
+        document.getElementById("loginMessage");
+
+
+    box.innerHTML = `
+        <div class="message ${type}">
+            ${message}
         </div>
-
-        <div class="matching-list">
-
-            ${matches.map(function (donor) {
-
-                return `
-
-                    <div class="matching-card">
-
-                        <div class="matching-main">
-
-                            <span class="matching-blood">
-                                ${donor.bloodType}
-                            </span>
-
-                            <div>
-
-                                <strong>
-                                    ${escapeHTML(donor.name)}
-                                </strong>
-
-                                <small>
-                                    ${escapeHTML(donor.location)}
-                                    ·
-                                    ${escapeHTML(donor.contact)}
-                                </small>
-
-                            </div>
-
-                        </div>
-
-                        <span class="status-pill active">
-                            Available
-                        </span>
-
-                    </div>
-
-                `;
-
-            }).join("")}
-
-        </div>
-
     `;
 
 }
 
 
-/* ============================================================
-   UPDATE DASHBOARD
-   ============================================================ */
+function showRegisterMessage(message, type) {
 
-function updateDashboard() {
-
-    const total =
-        donors.length;
+    const box =
+        document.getElementById("registerMessage");
 
 
-    const available =
-        donors.filter(function (donor) {
-
-            return donor.status === "Available";
-
-        }).length;
-
-
-    const pending =
-        requests.filter(function (request) {
-
-            return request.status === "Pending";
-
-        }).length;
-
-
-    const totalRequests =
-        requests.length;
-
-
-    document.getElementById("totalDonors")
-        .textContent = total;
-
-    document.getElementById("availableDonors")
-        .textContent = available;
-
-    document.getElementById("pendingRequests")
-        .textContent = pending;
-
-    document.getElementById("totalRequests")
-        .textContent = totalRequests;
-
-
-    document.getElementById("reportDonors")
-        .textContent = total;
-
-    document.getElementById("reportAvailable")
-        .textContent = available;
-
-    document.getElementById("reportRequests")
-        .textContent = totalRequests;
-
-    document.getElementById("reportPending")
-        .textContent = pending;
+    box.innerHTML = `
+        <div class="message ${type}">
+            ${message}
+        </div>
+    `;
 
 }
 
 
-/* ============================================================
-   ACTIVITY
-   ============================================================ */
+/* =========================================================
+   HTML SECURITY
+========================================================= */
 
-function addActivity(message) {
+function escapeHTML(value) {
 
-    activities.unshift({
-
-        message: message,
-
-        time: new Date().toLocaleTimeString([], {
-            hour: "2-digit",
-            minute: "2-digit"
-        })
-
-    });
-
-
-    /*
-       Keep only the latest 8 activities.
-    */
-
-    activities =
-        activities.slice(0, 8);
-
-
-    localStorage.setItem(
-        "activities",
-        JSON.stringify(activities)
-    );
-
-
-    renderActivities();
-
-}
-
-
-function renderActivities() {
-
-    const container =
-        document.getElementById("recentActivity");
-
-
-    if (activities.length === 0) {
-
-        container.innerHTML = `
-            <div class="empty-state">
-                <span>○</span>
-                <p>No recent activity.</p>
-            </div>
-        `;
-
-        return;
-
+    if (!value) {
+        return "";
     }
 
 
-    container.innerHTML =
-        activities.map(function (activity) {
-
-            return `
-
-                <div class="activity-item">
-
-                    <div class="activity-icon">
-                        ✓
-                    </div>
-
-                    <div class="activity-text">
-                        ${escapeHTML(activity.message)}
-                    </div>
-
-                    <div class="activity-time">
-                        ${activity.time}
-                    </div>
-
-                </div>
-
-            `;
-
-        }).join("");
-
-}
-
-
-/* ============================================================
-   DATE
-   ============================================================ */
-
-function updateDate() {
-
-    const date =
-        new Date();
-
-
-    document.getElementById(
-        "currentDate"
-    ).textContent =
-        date.toLocaleDateString(
-            "en-PH",
-            {
-                weekday: "short",
-                month: "short",
-                day: "numeric",
-                year: "numeric"
-            }
-        );
-
-}
-
-
-/* ============================================================
-   SAVE DATA
-   ============================================================ */
-
-function saveData() {
-
-    localStorage.setItem(
-        "bloodDonors",
-        JSON.stringify(donors)
-    );
-
-
-    localStorage.setItem(
-        "bloodRequests",
-        JSON.stringify(requests)
-    );
-
-}
-
-
-/* ============================================================
-   NOTIFICATION
-   ============================================================ */
-
-function showNotification(message) {
-
-    notificationMessage.textContent =
-        message;
-
-
-    notification.classList.add("show");
-
-
-    setTimeout(function () {
-
-        notification.classList.remove("show");
-
-    }, 3000);
-
-}
-
-
-/* ============================================================
-   CAPITALIZE
-   ============================================================ */
-
-function capitalize(text) {
-
-    return text.charAt(0).toUpperCase()
-        + text.slice(1);
-
-}
-
-
-/* ============================================================
-   SECURITY HELPER
-   ============================================================ */
-
-function escapeHTML(text) {
-
-    return String(text)
+    return value
         .replace(/&/g, "&amp;")
         .replace(/</g, "&lt;")
         .replace(/>/g, "&gt;")
@@ -1185,22 +1195,3 @@ function escapeHTML(text) {
         .replace(/'/g, "&#039;");
 
 }
-
-
-/* ============================================================
-   KEYBOARD: ESC CLOSE MODAL
-   ============================================================ */
-
-document.addEventListener("keydown", function (event) {
-
-    if (event.key === "Escape") {
-
-        document.querySelectorAll(".modal").forEach(function (modal) {
-
-            modal.classList.remove("show");
-
-        });
-
-    }
-
-});
